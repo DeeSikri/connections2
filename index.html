@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cell Biology Connections</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        .instructions {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #495057;
+            line-height: 1.4;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cell {
+            background: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .cell.selected {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .cell.correct {
+            background: #27ae60;
+            color: white;
+            border-color: #229954;
+            cursor: default;
+        }
+
+        .cell.correct:hover {
+            transform: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .group {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .group.organelles { background: #e74c3c; }
+        .group.cytoskeleton { background: #f39c12; }
+        .group.membrane { background: #27ae60; }
+        .group.metabolism { background: #8e44ad; }
+
+        .message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 480px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .cell {
+                font-size: 0.8rem;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1 class="title">🔬 Cell Biology</h1>
+            <p class="subtitle">Find groups of four related cellular components</p>
+            <div class="instructions">
+                Select four terms that belong to the same cellular category. Find the connections between related cellular components and processes.
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number" id="attempts">0</div>
+                <div class="stat-label">Attempts</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="correct">0</div>
+                <div class="stat-label">Correct</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="remaining">4</div>
+                <div class="stat-label">Groups Left</div>
+            </div>
+        </div>
+
+        <div class="grid" id="grid"></div>
+        
+        <div class="controls">
+            <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            <button class="btn btn-primary" id="submitBtn" disabled>Submit</button>
+            <button class="btn btn-secondary" id="shuffleBtn">Shuffle</button>
+        </div>
+
+        <div id="message"></div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const gameData = {
+            organelles: {
+                items: ['Mitochondria', 'Ribosomes', 'Endoplasmic Reticulum', 'Golgi Apparatus'],
+                description: 'MEMBRANE-BOUND ORGANELLES',
+                color: 'organelles'
+            },
+            cytoskeleton: {
+                items: ['Actin', 'Lamin', 'Cytokeratin', 'Vimentin'],
+                description: 'CYTOSKELETAL PROTEINS',
+                color: 'cytoskeleton'
+            },
+            membrane: {
+                items: ['Phospholipids', 'Cholesterol', 'Integral Proteins', 'Glycocalyx'],
+                description: 'CELL MEMBRANE COMPONENTS',
+                color: 'membrane'
+            },
+            metabolism: {
+                items: ['ATP Synthase', 'Glycolysis', 'Citric Acid Cycle', 'Electron Transport'],
+                description: 'CELLULAR METABOLISM',
+                color: 'metabolism'
+            }
+        };
+
+        let gameState = {
+            selected: [],
+            foundGroups: [],
+            attempts: 0,
+            allItems: []
+        };
+
+        function initializeGame() {
+            // Flatten all items
+            gameState.allItems = [];
+            Object.keys(gameData).forEach(group => {
+                gameData[group].items.forEach(item => {
+                    gameState.allItems.push({
+                        text: item,
+                        group: group
+                    });
+                });
+            });
+            
+            shuffleArray(gameState.allItems);
+            renderGrid();
+            updateStats();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            gameState.allItems.forEach((item, index) => {
+                if (!gameState.foundGroups.includes(item.group)) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = item.text;
+                    cell.dataset.index = index;
+                    cell.onclick = () => toggleSelection(index);
+                    grid.appendChild(cell);
+                }
+            });
+            
+            // Update display after rendering
+            updateGridDisplay();
+        }
+
+        function toggleSelection(index) {
+            const item = gameState.allItems[index];
+            if (gameState.foundGroups.includes(item.group)) return;
+
+            if (gameState.selected.includes(index)) {
+                gameState.selected = gameState.selected.filter(i => i !== index);
+            } else if (gameState.selected.length < 4) {
+                gameState.selected.push(index);
+            }
+
+            updateGridDisplay();
+            updateSubmitButton();
+        }
+
+        function updateGridDisplay() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                const index = parseInt(cell.dataset.index);
+                const item = gameState.allItems[index];
+                
+                if (gameState.foundGroups.includes(item.group)) {
+                    cell.classList.add('correct');
+                    cell.classList.remove('selected');
+                } else if (gameState.selected.includes(index)) {
+                    cell.classList.add('selected');
+                } else {
+                    cell.classList.remove('selected');
+                }
+            });
+        }
+
+        function updateSubmitButton() {
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = gameState.selected.length !== 4;
+        }
+
+        function checkSelection() {
+            if (gameState.selected.length !== 4) return;
+
+            gameState.attempts++;
+            
+            const selectedItems = gameState.selected.map(index => gameState.allItems[index]);
+            const groups = [...new Set(selectedItems.map(item => item.group))];
+            
+            if (groups.length === 1) {
+                // Correct group found
+                const group = groups[0];
+                gameState.foundGroups.push(group);
+                gameState.selected = [];
+                
+                showMessage(`Correct! ${gameData[group].description}`, 'success');
+                addResult(group);
+                
+                if (gameState.foundGroups.length === 4) {
+                    setTimeout(() => {
+                        showMessage('🎉 Congratulations! You found all groups!', 'success');
+                    }, 1000);
+                }
+            } else {
+                // Incorrect selection
+                showMessage('Not quite right. Try again!', 'error');
+                gameState.selected = [];
+            }
+            
+            renderGrid();
+            updateSubmitButton();
+            updateStats();
+        }
+
+        function addResult(groupKey) {
+            const results = document.getElementById('results');
+            const group = document.createElement('div');
+            group.className = `group ${gameData[groupKey].color}`;
+            group.innerHTML = `
+                <strong>${gameData[groupKey].description}</strong><br>
+                ${gameData[groupKey].items.join(' • ')}
+            `;
+            results.appendChild(group);
+        }
+
+        function clearSelection() {
+            gameState.selected = [];
+            updateGridDisplay();
+            updateSubmitButton();
+        }
+
+        function shuffleGrid() {
+            // Only shuffle items that haven't been found yet
+            const remainingItems = gameState.allItems.filter(item => !gameState.foundGroups.includes(item.group));
+            const foundItems = gameState.allItems.filter(item => gameState.foundGroups.includes(item.group));
+            
+            shuffleArray(remainingItems);
+            gameState.allItems = [...foundItems, ...remainingItems];
+            
+            renderGrid();
+            clearSelection();
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            
+            setTimeout(() => {
+                messageDiv.textContent = '';
+                messageDiv.className = '';
+            }, 3000);
+        }
+
+        function updateStats() {
+            document.getElementById('attempts').textContent = gameState.attempts;
+            document.getElementById('correct').textContent = gameState.foundGroups.length;
+            document.getElementById('remaining').textContent = 4 - gameState.foundGroups.length;
+        }
+
+        // Initialize the game
+        initializeGame();
+
+        // Add event listeners
+        document.getElementById('clearBtn').addEventListener('click', clearSelection);
+        document.getElementById('submitBtn').addEventListener('click', checkSelection);
+        document.getElementById('shuffleBtn').addEventListener('click', shuffleGrid);
+    </script>
+</body>
+</html>
